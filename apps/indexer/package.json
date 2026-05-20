@@ -1,0 +1,21 @@
+{
+  "name": "@perps-xt/indexer",
+  "version": "1.0.0",
+  "main": "./src/index.ts",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "ws": "^8.18.2",
+    "@perps-xt/types": "workspace:*",
+    "@perps-xt/redis": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.14",
+    "tsx": "^4.19.4",
+    "typescript": "^5.9.2",
+    "@repo/typescript-config": "workspace:*"
+  }
+}
