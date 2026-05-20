@@ -13,12 +13,10 @@ export function createRedisClient(): Redis {
   return client;
 }
 
-// ─── QUEUE OPERATIONS ─────────────────────────────────────────────────────────
-
-export async function lpush(
+export async function lpush<T>(
   client: Redis,
   queue: string,
-  message: unknown,
+  message: T,
 ): Promise<void> {
   await client.lpush(queue, JSON.stringify(message));
 }
@@ -28,17 +26,15 @@ export async function brpop<T>(
   queue: string,
   timeout: number = 0,
 ): Promise<T | null> {
-  const result = await client.brpop(queue, timeout);
+  const result = await client.brpop(queue, timeout); //if timeot 0  , then it means "blocks forever , wakes up instantly a message arrives"
   if (!result) return null;
-  return JSON.parse(result[1]) as T;
+  return JSON.parse(result[1]) as T; //result is an array[queueName , vlue] the value is in 1st index
 }
 
-// ─── PUB/SUB OPERATIONS ───────────────────────────────────────────────────────
-
-export async function publish(
+export async function publish<T>(
   client: Redis,
   channel: string,
-  message: unknown,
+  message: T,
 ): Promise<void> {
   await client.publish(channel, JSON.stringify(message));
 }
