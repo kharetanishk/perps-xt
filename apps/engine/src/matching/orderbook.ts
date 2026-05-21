@@ -88,3 +88,32 @@ export function getBestBid(book: LiveOrderbook): number | null | undefined {
 export function getBestAsk(book: LiveOrderbook): number | null | undefined {
   return book.sortedAskPrices.length > 0 ? book.sortedAskPrices[0] : null;
 }
+
+// Map cannot be JSON serialized — this is the conversion step Serialization
+export function serializeOrderbook(
+  book: LiveOrderbook,
+  market: string,
+  depth = 20,
+) {
+  const bids = book.sortedBidPrices.slice(0, depth).map((price) => ({
+    price,
+    qty: book.bids
+      .get(price)!
+      .reduce((sum, o) => sum + (o.qty - o.filledQty), 0),
+  }));
+
+  const asks = book.sortedAskPrices.slice(0, depth).map((price) => ({
+    price,
+    qty: book.asks
+      .get(price)!
+      .reduce((sum, o) => sum + (o.qty - o.filledQty), 0),
+  }));
+
+  return {
+    market,
+    bids,
+    asks,
+    lastTradedPrice: book.lastTradedPrice,
+    indexPrice: book.indexPrice,
+  };
+}
