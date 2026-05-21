@@ -54,7 +54,7 @@ export interface Position {
   market: string;
   side: Side;
   qty: number;
-  averagePrice: number; // weighted avg entry price across all fills
+  averagePrice: number; // weighted avg entry price across all flls
   margin: number; // total collateral locked for this position
   liquidationPrice: number; // engine force-closes if indexPrice hits this
   realizedPnl: number; // profit/loss from partially closed portions — stored
