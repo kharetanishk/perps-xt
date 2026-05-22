@@ -5,11 +5,5 @@
   "license": "MIT",
   "publishConfig": {
     "access": "public"
-  },
-  "files": [
-    "base.json",
-    "node.json",
-    "react-native.json",
-    "react-library.json"
-  ]
+  }
 }

@@ -1,0 +1,27 @@
+{
+  "name": "@perps-xt/db",
+  "version": "1.0.0",
+  "main": "./src/prismaClient.ts",
+  "types": "./src/prismaClient.ts",
+  "exports": {
+    ".": "./src/prismaClient.ts"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:^",
+    "@types/pg": "^8.20.0",
+    "prisma": "^6.8.2",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^6.8.2",
+    "dotenv": "^17.4.2",
+    "pg": "^8.21.0"
+  }
+}

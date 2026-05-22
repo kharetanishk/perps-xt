@@ -10,7 +10,7 @@ function findInsertIndex(
 
   while (low < high) {
     const mid = (low + high) >> 1;
-    const midPrice = sortedPrices[mid];
+    const midPrice = sortedPrices[mid]!;
 
     if (descending) {
       if (midPrice > price) low = mid + 1;

@@ -8,12 +8,14 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@perps-xt/types": "workspace:*",
-    "@perps-xt/redis": "workspace:*"
+    "@perps-xt/redis": "workspace:*",
+    "@perps-xt/types": "workspace:*"
   },
   "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/uuid": "^11.0.0",
     "tsx": "^4.19.4",
     "typescript": "^5.9.2",
-    "@repo/typescript-config": "workspace:*"
+    "uuid": "^14.0.0"
   }
 }
