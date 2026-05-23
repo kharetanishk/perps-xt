@@ -23,9 +23,12 @@
     "@types/dotenv": "^8.2.3",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.9",
+    "@types/supertest": "^7.2.0",
     "dotenv": "^17.4.2",
     "express": "^4.22.2",
+    "supertest": "^7.2.2",
     "tsx": "^4.19.4",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^4.1.7"
   }
 }
