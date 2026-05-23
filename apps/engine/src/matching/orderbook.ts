@@ -60,9 +60,9 @@ export function removeOrderFromBook(
   const level = priceMap.get(order.price); // uss particular price ke liye kitne orders hai
   if (!level) return;
 
-  //ab remaining orders tb niklege kese jo orderid mein dlt nahi
+  //ab remaining orders tb niklege kese jo orderid hum dlt nahi
   //krna chah rha level se vo sb remaining orders ke array mein aajyenge
-  const remaining = level.filter((o) => o.orderId === order.orderId);
+  const remaining = level.filter((o) => o.orderId !== order.orderId);
 
   if (remaining.length === 0) {
     //ab agr remaining orders nahi hai to us price level k hone k koi mltb nahi hai
