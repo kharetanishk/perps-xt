@@ -2,7 +2,7 @@ import express from "express";
 import { Express } from "express";
 import { Response } from "express";
 import cors from "cors";
-import authRoute from "./routes/auth.soutes";
+import authRoute from "./routes/auth.routes";
 import userRoute from "./routes/user.routes";
 
 const app: Express = express();
