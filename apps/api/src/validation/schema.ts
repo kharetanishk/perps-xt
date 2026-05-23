@@ -9,7 +9,7 @@ const usernmameValidation = z
 const passwordValdation = z
   .string()
   .min(5, " Password is too short")
-  .regex(/1-10/, "Password should contain atleast one numerical value")
+  .regex(/[0-10]/, "Password should contain atleast one numerical value")
   .trim();
 
 const emailValidation = z.string().email("invalid email ").trim();

@@ -17,7 +17,7 @@
     "zod": "^3.25.28"
   },
   "devDependencies": {
-    "@perpsxt/db": "workspace:*",
+    "@perps-xt/db": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/bcryptjs": "^2.4.6",
     "@types/dotenv": "^8.2.3",
