@@ -17,7 +17,7 @@ export function matchOrder(
   book: LiveOrderbook,
 ): MatchResult {
   const fills: Fill[] = [];
-  let remainingQty = order.qty;
+  let remainingQty = order.qty; //its the qty that the user has ordered
 
   const isLong = order.side === "Long";
 
@@ -28,6 +28,9 @@ export function matchOrder(
   while (remainingQty > 0 && sortedPrices.length > 0) {
     const bestPrice = sortedPrices[0]!;
 
+    //now canMatch is only possible in these conditions ....
+    //if market order then match to hoga hi (true) and if linmit order
+    //long -> order.price >= best price / short -> order.price  <= best price
     const canMatch =
       order.orderType === "market"
         ? true
@@ -35,8 +38,10 @@ export function matchOrder(
           ? order.price! >= bestPrice
           : order.price! <= bestPrice;
 
+    //agr match nahi hua to break
     if (!canMatch) break;
 
+    //orders nikalo -> resting orders - lvel
     const level = priceMap.get(bestPrice)!;
     let i = 0;
 
@@ -76,6 +81,7 @@ export function matchOrder(
     }
   }
 
+  //final status after matching ....
   if (remainingQty === 0) {
     order.status = "filled";
   } else if (order.filledQty > 0) {
@@ -94,6 +100,7 @@ export function matchOrder(
     }
   }
 
+  //lasttradedprice -> price of most recent trade of our exchange
   if (fills.length > 0) {
     book.lastTradedPrice = fills[fills.length - 1]!.price;
   }
@@ -101,6 +108,8 @@ export function matchOrder(
   return { fills, order };
 }
 
+//this fn It takes the remaining unfilled
+//portion and creates a clean resting order from it.
 function toRestingOrder(
   order: OrderRecord,
   remainingQty: number,

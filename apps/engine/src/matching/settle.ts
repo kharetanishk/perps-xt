@@ -1,7 +1,6 @@
 import { v4 as uuid } from "uuid";
 import type { Fill, Position, Balance } from "@perps-xt/types";
 import {
-  balances,
   positions,
   getOrCreateBalance,
   getOrCreateUserPositions,
