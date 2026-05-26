@@ -26,7 +26,7 @@ function findInsertIndex(
 
 //addordertoook
 export function addOrderToBook(book: LiveOrderbook, order: RestingOrder): void {
-  const isBid = order.side === "Long";
+  const isBid = order.side === "LONG";
   const priceMap = isBid ? book.bids : book.asks;
   const sortedPrices = isBid ? book.sortedBidPrices : book.sortedAskPrices;
 
@@ -50,7 +50,7 @@ export function removeOrderFromBook(
   book: LiveOrderbook,
   order: RestingOrder,
 ): void {
-  const isBid = order.side === "Long";
+  const isBid = order.side === "LONG";
   const priceMap = isBid ? book.bids : book.asks;
   const sortedPrices = isBid ? book.sortedBidPrices : book.sortedAskPrices;
 

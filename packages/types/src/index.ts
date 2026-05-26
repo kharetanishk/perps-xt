@@ -1,4 +1,4 @@
-export type Side = "Long" | "Short";
+export type Side = "LONG" | "SHORT";
 
 export type OrderType = "limit" | "market";
 

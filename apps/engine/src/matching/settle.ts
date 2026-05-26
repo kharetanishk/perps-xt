@@ -1,5 +1,5 @@
 import { v4 as uuid } from "uuid";
-import type { Fill, Position, Balance } from "@perps-xt/types";
+import type { Fill, Position } from "@perps-xt/types";
 import {
   positions,
   getOrCreateBalance,
@@ -9,8 +9,8 @@ import {
 // main settlement function
 // Called once per fill. Settles both the maker and the taker.
 
-export function settleFill(fill: Fill, makerSide: "Long" | "Short"): void {
-  const takerSide = makerSide === "Long" ? "Short" : "Long";
+export function settleFill(fill: Fill, makerSide: "LONG" | "SHORT"): void {
+  const takerSide = makerSide === "LONG" ? "SHORT" : "LONG";
 
   // settle both sides
   settleUserFill(
@@ -34,7 +34,7 @@ export function settleFill(fill: Fill, makerSide: "Long" | "Short"): void {
 function settleUserFill(
   userId: string,
   market: string,
-  side: "Long" | "Short",
+  side: "LONG" | "SHORT",
   fillPrice: number,
   fillQty: number,
 ): void {
@@ -68,7 +68,7 @@ function settleUserFill(
 function openNewPosition(
   userId: string,
   market: string,
-  side: "Long" | "Short",
+  side: "LONG" | "SHORT",
   price: number,
   qty: number,
   userPositions: Map<string, Position>,
@@ -189,7 +189,7 @@ function reduceOrClosePosition(
     // Close the existing position fully, open new one on opposite side
     const closeQty = position.qty;
     const newQty = fillQty - closeQty;
-    const newSide = position.side === "Long" ? "Short" : "Long";
+    const newSide = position.side === "LONG" ? "SHORT" : "LONG";
 
     // first fully close existing
     const realizedPnl = calculateRealizedPnl(
@@ -222,33 +222,33 @@ function calculateMargin(price: number, qty: number): number {
 }
 
 // Liquidation price = the price at which margin is fully consumed
-// Long:  liquidationPrice = averagePrice - (margin / qty)
+// LONG:  liquidationPrice = averagePrice - (margin / qty)
 //        if price drops this much, you've lost all your margin
-// Short: liquidationPrice = averagePrice + (margin / qty)
+// SHORT: liquidationPrice = averagePrice + (margin / qty)
 //        if price rises this much, you've lost all your margin
 function calculateLiquidationPrice(
-  side: "Long" | "Short",
+  side: "LONG" | "SHORT",
   averagePrice: number,
   margin: number,
   qty: number,
 ): number {
   const marginPerUnit = margin / qty;
 
-  return side === "Long"
-    ? averagePrice - marginPerUnit // Long liquidates below entry
-    : averagePrice + marginPerUnit; // Short liquidates above entry
+  return side === "LONG"
+    ? averagePrice - marginPerUnit // LONG liquidates below entry
+    : averagePrice + marginPerUnit; // SHORT liquidates above entry
 }
 
 // Realized PnL = profit/loss on the closed portion
-// Long:  pnl = (exitPrice - entryPrice) × qty
-// Short: pnl = (entryPrice - exitPrice) × qty
+// LONG:  pnl = (exitPrice - entryPrice) × qty
+// SHORT: pnl = (entryPrice - exitPrice) × qty
 function calculateRealizedPnl(
-  side: "Long" | "Short",
+  side: "LONG" | "SHORT",
   entryPrice: number,
   exitPrice: number,
   qty: number,
 ): number {
-  return side === "Long"
+  return side === "LONG"
     ? (exitPrice - entryPrice) * qty
     : (entryPrice - exitPrice) * qty;
 }
@@ -268,7 +268,7 @@ export function checkLiquidations(
     if (!position) continue;
 
     const isLiquidated =
-      position.side === "Long"
+      position.side === "LONG"
         ? indexPrice <= position.liquidationPrice // price fell too low
         : indexPrice >= position.liquidationPrice; // price rose too high
 

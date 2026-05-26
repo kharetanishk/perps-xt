@@ -19,7 +19,7 @@ export function matchOrder(
   const fills: Fill[] = [];
   let remainingQty = order.qty; //its the qty that the user has ordered
 
-  const isLong = order.side === "Long";
+  const isLong = order.side === "LONG";
 
   const priceMap = isLong ? book.asks : book.bids;
   const sortedPrices = isLong ? book.sortedAskPrices : book.sortedBidPrices;
