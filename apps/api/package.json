@@ -16,6 +16,7 @@
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.6",
     "jsonwebtoken": "^9.0.2",
+    "uuid": "^14.0.0",
     "zod": "^3.25.28"
   },
   "devDependencies": {
@@ -26,6 +27,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/supertest": "^7.2.0",
+    "@types/uuid": "^11.0.0",
     "dotenv": "^17.4.2",
     "express": "^4.22.2",
     "supertest": "^7.2.2",

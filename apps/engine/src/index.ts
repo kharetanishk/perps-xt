@@ -22,7 +22,7 @@ async function main() {
 
       switch (request.type) {
         case "create_order":
-          response = handleCreateOrder(request);
+          response = handleCreateOrder(request, client);
           break;
 
         default:
@@ -43,3 +43,45 @@ async function main() {
 }
 
 main();
+
+import { orderbooks, balances, positions } from "./store";
+import { writeFileSync, mkdirSync } from "fs";
+import { join } from "path";
+
+function saveSnapshot() {
+  const snapshot = {
+    timestamp: Date.now(),
+    orderbooks: Object.fromEntries(
+      Array.from(orderbooks.entries()).map(([market, book]) => [
+        market,
+        {
+          // convert Maps to plain objects for JSON serialization
+          bids: Object.fromEntries(book.bids),
+          asks: Object.fromEntries(book.asks),
+          sortedBidPrices: book.sortedBidPrices,
+          sortedAskPrices: book.sortedAskPrices,
+          lastTradedPrice: book.lastTradedPrice,
+          indexPrice: book.indexPrice,
+        },
+      ]),
+    ),
+    balances: Object.fromEntries(balances),
+    positions: Object.fromEntries(
+      Array.from(positions.entries()).map(([userId, userPos]) => [
+        userId,
+        Object.fromEntries(userPos),
+      ]),
+    ),
+  };
+
+  const dir = join(process.cwd(), "snapshots");
+  const filename = `snapshot_${Date.now()}.json`;
+
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, filename), JSON.stringify(snapshot));
+
+  console.log(`[engine] snapshot saved: ${filename}`);
+}
+
+// save snapshot every 5 minutes
+setInterval(saveSnapshot, 5 * 60 * 1000);

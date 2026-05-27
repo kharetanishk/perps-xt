@@ -1,8 +1,8 @@
 // apps/engine/src/handlers/createOrder.ts
-// Validates, matches, settles one create_order request.
-// Returns EngineResponse to be sent back to the API.
 
 import { v4 as uuid } from "uuid";
+import type Redis from "ioredis";
+import { lpush, QUEUES } from "@perps-xt/redis";
 import type {
   CreateOrderPayload,
   EngineRequest,
@@ -15,11 +15,13 @@ import { settleFill } from "../matching/settle";
 
 const LEVERAGE = 10;
 
-export function handleCreateOrder(request: EngineRequest): EngineResponse {
+export async function handleCreateOrder(
+  request: EngineRequest,
+  redisClient: Redis,
+): Promise<EngineResponse> {
   const payload = request.payload as unknown as CreateOrderPayload;
 
-  //validation
-
+  // ── VALIDATION ────────────────────────────────────────────────────────────
   if (!payload.market || !payload.side || !payload.orderType) {
     return error(request.correlationId, "Missing required fields");
   }
@@ -32,19 +34,17 @@ export function handleCreateOrder(request: EngineRequest): EngineResponse {
     return error(request.correlationId, "Invalid quantity");
   }
 
-  //margin check
-
+  // ── MARGIN CHECK ──────────────────────────────────────────────────────────
   const balance = getOrCreateBalance(request.userId);
   const price = payload.price ?? 0;
   const marginRequired =
-    payload.orderType === "limit" ? (price * payload.qty) / LEVERAGE : 0; // market orders: margin checked after matching (we know the fill price)
+    payload.orderType === "limit" ? (price * payload.qty) / LEVERAGE : 0;
 
   if (payload.orderType === "limit" && balance.available < marginRequired) {
     return error(request.correlationId, "Insufficient margin");
   }
 
-  //build order records
-
+  // ── BUILD ORDER RECORD ────────────────────────────────────────────────────
   const order: OrderRecord = {
     orderId: uuid(),
     userId: request.userId,
@@ -60,21 +60,30 @@ export function handleCreateOrder(request: EngineRequest): EngineResponse {
     createdAt: Date.now(),
   };
 
-  // match
-
+  // ── MATCH ─────────────────────────────────────────────────────────────────
   const book = getOrCreateOrderbook(payload.market);
   const { fills, order: updatedOrder } = matchOrder(order, book);
 
-  // settle
-
+  // ── SETTLE + PUSH TO DB QUEUE ─────────────────────────────────────────────
   for (const fill of fills) {
     settleFill(fill, updatedOrder.side);
     updatedOrder.fills.push(fill);
+
+    // push fill to db-poller queue — persisted asynchronously
+    await lpush(redisClient, QUEUES.DB_WRITES, {
+      type: "fill",
+      payload: fill,
+    });
   }
 
-  // store
-
+  // ── STORE IN MEMORY ───────────────────────────────────────────────────────
   orders.set(updatedOrder.orderId, updatedOrder);
+
+  // push order to db-poller queue
+  await lpush(redisClient, QUEUES.DB_WRITES, {
+    type: "order",
+    payload: updatedOrder,
+  });
 
   return {
     correlationId: request.correlationId,
@@ -86,6 +95,8 @@ export function handleCreateOrder(request: EngineRequest): EngineResponse {
     },
   };
 }
+
+// ─── HELPER ──────────────────────────────────────────────────────────────────
 
 function error(correlationId: string, message: string): EngineResponse {
   return { correlationId, ok: false, error: message };

@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "@perps-xt/redis": "workspace:*",
-    "@perps-xt/types": "workspace:*"
+    "@perps-xt/types": "workspace:*",
+    "ioredis": "^5.4.2"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
