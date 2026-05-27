@@ -1,7 +1,3 @@
-// apps/engine/src/index.ts
-// The engine's main loop. One process, one thread, one stream.
-// Reads from Redis stream sequentially — no race conditions possible.
-
 import { createRedisClient, brpop, lpush, QUEUES } from "@perps-xt/redis";
 import type { EngineRequest } from "@perps-xt/types";
 import { handleCreateOrder } from "./handlers/createOrder";
