@@ -1,5 +1,5 @@
 import { v4 as uuid } from "uuid";
-import { createRedisClient, lpush, brpop, QUEUES } from "@perps-xt/redis";
+import { createRedisClient, xadd, brpop, STREAMS } from "@perps-xt/redis";
 import type {
   EngineRequest,
   EngineResponse,
@@ -35,8 +35,7 @@ export async function sendToEngine(
     payload,
   };
 
-  // send to engine
-  await lpush(sender, QUEUES.ENGINE_REQUESTS, request);
+  await xadd(sender, STREAMS.INCOMING, request);
 
   // wait for response with timeout
   // brpop with timeout=5 waits max 5 seconds then returns null

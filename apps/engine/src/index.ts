@@ -1,4 +1,12 @@
-import { createRedisClient, brpop, lpush, QUEUES } from "@perps-xt/redis";
+import {
+  createRedisClient,
+  createConsumerGroup,
+  xreadOne,
+  xack,
+  lpush,
+  STREAMS,
+  GROUPS,
+} from "@perps-xt/redis";
 import { orderbooks, balances, positions } from "./store";
 import { writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
@@ -10,19 +18,25 @@ import { handleGetBalance } from "./handlers/getBalance";
 import { handleGetOrderbook } from "./handlers/getOrderbook";
 import { handleGetPositions } from "./handlers/getPositions";
 import { handleGetOpenOrders } from "./handlers/getOpenOrders";
+import { handleGetFills } from "./handlers/getFills";
 
 const client = createRedisClient();
 console.log("[engine] starting...");
 
 async function main() {
+  await createConsumerGroup(client, STREAMS.INCOMING, GROUPS.ENGINE);
+
   while (true) {
     try {
-      const request = await brpop<EngineRequest>(
+      const entry = await xreadOne<EngineRequest>(
         client,
-        QUEUES.ENGINE_REQUESTS,
+        STREAMS.INCOMING,
+        GROUPS.ENGINE,
+        "engine-consumer-1",
       );
-      if (!request) continue;
+      if (!entry) continue;
 
+      const request = entry.data;
       let response;
 
       switch (request.type) {
@@ -47,6 +61,9 @@ async function main() {
         case "get_open_orders":
           response = handleGetOpenOrders(request);
           break;
+        case "get_fills":
+          response = handleGetFills(request);
+          break;
         default:
           response = {
             correlationId: request.correlationId,
@@ -56,6 +73,7 @@ async function main() {
       }
 
       await lpush(client, request.responseQueue, response);
+      await xack(client, STREAMS.INCOMING, GROUPS.ENGINE, entry.id);
     } catch (err) {
       console.error("[engine] error:", err);
     }

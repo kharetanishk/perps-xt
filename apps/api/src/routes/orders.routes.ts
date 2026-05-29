@@ -50,3 +50,54 @@ ordersRoute.post("/", verifyToken, async (req, res) => {
     res.status(503).json({ error: "Engine unavailable" });
   }
 });
+ordersRoute.get("/open", verifyToken, async (req, res) => {
+  try {
+    const response = await sendToEngine("get_open_orders", req.userId, {});
+
+    if (!response.ok) {
+      res.status(400).json({ error: response.error });
+      return;
+    }
+
+    res.status(200).json(response.data);
+  } catch (err) {
+    console.error("[api] engine error:", err);
+    res.status(503).json({ error: "Engine unavailable" });
+  }
+});
+
+ordersRoute.get("/fills", verifyToken, async (req, res) => {
+  try {
+    const response = await sendToEngine("get_fills", req.userId, {});
+
+    if (!response.ok) {
+      res.status(400).json({ error: response.error });
+      return;
+    }
+
+    res.status(200).json(response.data);
+  } catch (err) {
+    console.error("[api] engine error:", err);
+    res.status(503).json({ error: "Engine unavailable" });
+  }
+});
+
+ordersRoute.delete("/:orderId", verifyToken, async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    const response = await sendToEngine("cancel_order", req.userId, {
+      orderId,
+    });
+
+    if (!response.ok) {
+      res.status(400).json({ error: response.error });
+      return;
+    }
+
+    res.status(200).json(response.data);
+  } catch (err) {
+    console.error("[api] engine error:", err);
+    res.status(503).json({ error: "Engine unavailable" });
+  }
+});

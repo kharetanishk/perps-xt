@@ -13,7 +13,7 @@ export const orders = new Map<string, OrderRecord>();
 //seed a user with some balance production mein onramp use krenge
 export function getOrCreateBalance(userId: string): Balance {
   if (!balances.has(userId)) {
-    balances.set(userId, { available: 10000, locked: 0 });
+    balances.set(userId, { available: 0, locked: 0 });
   }
   return balances.get(userId)!;
 }

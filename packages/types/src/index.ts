@@ -106,6 +106,7 @@ export type EngineRequestType =
   | "cancel_order"
   | "get_orderbook"
   | "get_open_orders"
+  | "get_fills"
   | "get_positions"
   | "get_balance"
   | "onramp";

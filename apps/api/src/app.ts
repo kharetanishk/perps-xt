@@ -4,9 +4,9 @@ import cors from "cors";
 import authRoute from "./routes/auth.routes";
 import userRoute from "./routes/user.routes";
 import { ordersRoute } from "./routes/orders.routes";
-import { balanceRoute } from "./routes/balance.routes";
-import { depthRoute } from "./routes/depth.routes";
-import { positionsRoute } from "./routes/positions.routes";
+import { balanceRoute } from "../src/routes/balance.routes";
+import { depthRoute } from "../src/routes/depth.routes";
+import { positionsRoute } from "../src/routes/positions.routes";
 
 const app: Express = express();
 app.use(cors());

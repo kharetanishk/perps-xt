@@ -42,6 +42,11 @@ export async function handleCreateOrder(
     return error(request.correlationId, "Insufficient margin");
   }
 
+  if (payload.orderType === "limit") {
+    balance.available -= marginRequired;
+    balance.locked += marginRequired;
+  }
+
   // ── BUILD ORDER RECORD ────────────────────────────────────────────────────
   const order: OrderRecord = {
     orderId: uuid(),
@@ -64,8 +69,26 @@ export async function handleCreateOrder(
 
   // ── SETTLE + PUSH TO DB QUEUE ─────────────────────────────────────────────
   for (const fill of fills) {
-    settleFill(fill, updatedOrder.side);
+    releaseOrderMarginForFill(updatedOrder, fill.qty, request.userId);
+
+    const makerOrder = orders.get(fill.makerOrderId);
+    if (makerOrder) {
+      releaseOrderMarginForFill(makerOrder, fill.qty, makerOrder.userId);
+    }
+
+    const makerSide = updatedOrder.side === "LONG" ? "SHORT" : "LONG";
+    settleFill(fill, makerSide);
     updatedOrder.fills.push(fill);
+
+    if (makerOrder) {
+      makerOrder.filledQty += fill.qty;
+      makerOrder.fills.push(fill);
+      if (makerOrder.filledQty >= makerOrder.qty) {
+        makerOrder.status = "filled";
+      } else {
+        makerOrder.status = "partially_filled";
+      }
+    }
 
     // push fill to db-poller queue — persisted asynchronously
     await lpush(redisClient, QUEUES.DB_WRITES, {
@@ -98,4 +121,15 @@ export async function handleCreateOrder(
 
 function error(correlationId: string, message: string): EngineResponse {
   return { correlationId, ok: false, error: message };
+}
+
+function releaseOrderMarginForFill(
+  order: OrderRecord,
+  fillQty: number,
+  userId: string,
+): void {
+  const balance = getOrCreateBalance(userId);
+  const released = order.margin * (fillQty / order.qty);
+  balance.locked -= released;
+  balance.available += released;
 }
