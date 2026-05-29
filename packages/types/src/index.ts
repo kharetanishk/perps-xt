@@ -104,10 +104,15 @@ export interface LiveOrderbook {
 export type EngineRequestType =
   | "create_order"
   | "cancel_order"
-  | "get_orderbook" // engine memory → api (real-time depth)
-  | "get_open_orders" // engine memory → api (user's resting orders)
-  | "get_positions" // engine memory → api (user's open positions)
-  | "get_balance"; // engine memory → api (user's collateral)
+  | "get_orderbook"
+  | "get_open_orders"
+  | "get_positions"
+  | "get_balance"
+  | "onramp";
+
+export interface OnrampPayload {
+  amount: number;
+}
 
 export interface EngineRequest {
   correlationId: string; // uuid, used to match response to pending HTTP request

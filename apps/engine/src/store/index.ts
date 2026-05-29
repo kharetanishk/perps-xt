@@ -3,7 +3,7 @@ import { LiveOrderbook, OrderRecord, Balance, Position } from "@perps-xt/types";
 //one orderbook per market
 export const orderbooks = new Map<string, LiveOrderbook>();
 
-//position of an user -> in the market
+//userid-> market -> positions
 export const positions = new Map<string, Map<string, Position>>();
 //userid -> balances
 export const balances = new Map<string, Balance>();
