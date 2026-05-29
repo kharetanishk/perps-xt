@@ -1,52 +1,66 @@
 import { createRedisClient, brpop, lpush, QUEUES } from "@perps-xt/redis";
+import { orderbooks, balances, positions } from "./store";
+import { writeFileSync, mkdirSync } from "fs";
+import { join } from "path";
 import type { EngineRequest } from "@perps-xt/types";
 import { handleCreateOrder } from "./handlers/createOrder";
+import { handleCancelOrder } from "./handlers/cancelOrder";
+import { handleOnramp } from "./handlers/onramp";
+import { handleGetBalance } from "./handlers/getBalance";
+import { handleGetOrderbook } from "./handlers/getOrderbook";
+import { handleGetPositions } from "./handlers/getPositions";
+import { handleGetOpenOrders } from "./handlers/getOpenOrders";
 
 const client = createRedisClient();
-
 console.log("[engine] starting...");
 
 async function main() {
   while (true) {
     try {
-      // block until a message arrives — zero CPU while waiting
       const request = await brpop<EngineRequest>(
         client,
         QUEUES.ENGINE_REQUESTS,
       );
+      if (!request) continue;
 
-      if (!request) continue; // timeout hit (shouldn't happen with timeout=0)
-
-      // route to correct handler based on message type
       let response;
 
       switch (request.type) {
         case "create_order":
-          response = handleCreateOrder(request, client);
+          response = await handleCreateOrder(request, client);
           break;
-
+        case "cancel_order":
+          response = handleCancelOrder(request);
+          break;
+        case "onramp":
+          response = handleOnramp(request);
+          break;
+        case "get_balance":
+          response = handleGetBalance(request);
+          break;
+        case "get_orderbook":
+          response = handleGetOrderbook(request);
+          break;
+        case "get_positions":
+          response = handleGetPositions(request);
+          break;
+        case "get_open_orders":
+          response = handleGetOpenOrders(request);
+          break;
         default:
           response = {
             correlationId: request.correlationId,
             ok: false,
-            error: `Unknown request type: ${request.type}`,
+            error: `Unknown: ${request.type}`,
           };
       }
 
-      // send response back to the API server's private queue
       await lpush(client, request.responseQueue, response);
     } catch (err) {
-      // log but never crash — engine must keep running
-      console.error("[engine] error processing message:", err);
+      console.error("[engine] error:", err);
     }
   }
 }
-
-main();
-
-import { orderbooks, balances, positions } from "./store";
-import { writeFileSync, mkdirSync } from "fs";
-import { join } from "path";
 
 function saveSnapshot() {
   const snapshot = {
@@ -55,7 +69,6 @@ function saveSnapshot() {
       Array.from(orderbooks.entries()).map(([market, book]) => [
         market,
         {
-          // convert Maps to plain objects for JSON serialization
           bids: Object.fromEntries(book.bids),
           asks: Object.fromEntries(book.asks),
           sortedBidPrices: book.sortedBidPrices,
@@ -75,13 +88,13 @@ function saveSnapshot() {
   };
 
   const dir = join(process.cwd(), "snapshots");
-  const filename = `snapshot_${Date.now()}.json`;
-
   mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, filename), JSON.stringify(snapshot));
-
-  console.log(`[engine] snapshot saved: ${filename}`);
+  writeFileSync(
+    join(dir, `snapshot_${Date.now()}.json`),
+    JSON.stringify(snapshot),
+  );
+  console.log("[engine] snapshot saved");
 }
 
-// save snapshot every 5 minutes
 setInterval(saveSnapshot, 5 * 60 * 1000);
+main();
